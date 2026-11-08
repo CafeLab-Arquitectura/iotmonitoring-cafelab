@@ -30,8 +30,13 @@ public class TelemetryRecordCommandServiceImpl implements TelemetryRecordCommand
             throw new IllegalArgumentException("Cannot record telemetry. Coffee Lot with ID " + command.coffeeLotId() + " does not exist.");
         }
 
+        var existing = telemetryRepository.findBySensorIdAndSequence(command.sensorId(), command.sequence());
+        if (existing.isPresent()) {
+            return existing; // Idempotencia: retorna el registro sin duplicar ni lanzar error
+        }
+
         var telemetryRecord = new TelemetryRecord(command);
-        telemetryRepository.save(telemetryRecord);
-        return Optional.of(telemetryRecord);
+        var saved = telemetryRepository.save(telemetryRecord);
+        return Optional.of(saved != null ? saved : telemetryRecord);
     }
 }

@@ -1,11 +1,11 @@
 package com.cafemetrix.cafelab.monitoring.interfaces.rest;
 
-import com.cafemetrix.cafelab.monitoring.domain.model.commands.CreateTelemetryRecordCommand;
 import com.cafemetrix.cafelab.monitoring.domain.model.queries.GetTelemetryRecordsByCoffeeLotIdQuery;
 import com.cafemetrix.cafelab.monitoring.domain.services.TelemetryRecordCommandService;
 import com.cafemetrix.cafelab.monitoring.domain.services.TelemetryRecordQueryService;
 import com.cafemetrix.cafelab.monitoring.interfaces.rest.resources.CreateTelemetryRecordResource;
 import com.cafemetrix.cafelab.monitoring.interfaces.rest.resources.TelemetryRecordResource;
+import com.cafemetrix.cafelab.monitoring.interfaces.rest.transform.CreateTelemetryRecordCommandFromResourceAssembler;
 import com.cafemetrix.cafelab.monitoring.interfaces.rest.transform.TelemetryRecordResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -38,11 +38,7 @@ public class TelemetryRecordsController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TelemetryRecordResource> recordTelemetry(@RequestBody CreateTelemetryRecordResource resource) {
-        var command = new CreateTelemetryRecordCommand(
-                resource.coffeeLotId(),
-                resource.temperature(),
-                resource.humidity(),
-                resource.timestamp());
+        var command = CreateTelemetryRecordCommandFromResourceAssembler.toCommandFromResource(resource);
         var record = telemetryCommandService.handle(command);
 
         if (record.isEmpty()) {

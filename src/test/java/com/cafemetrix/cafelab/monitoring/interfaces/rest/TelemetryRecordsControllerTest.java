@@ -45,7 +45,7 @@ class TelemetryRecordsControllerTest {
     }
 
     @Test
-    void shouldCreateTelemetryRecord() throws Exception {
+    void shouldCreateTelemetryRecordWithLegacyPayload() throws Exception {
         var record = new TelemetryRecord(new CreateTelemetryRecordCommand(
                 7L,
                 25.5,
@@ -73,6 +73,39 @@ class TelemetryRecordsControllerTest {
                 .andExpect(jsonPath("$.timestamp[2]").value(15))
                 .andExpect(jsonPath("$.timestamp[3]").value(10))
                 .andExpect(jsonPath("$.timestamp[4]").value(30));
+    }
+
+    @Test
+    void shouldCreateTelemetryRecordWithCanonicalPayload() throws Exception {
+        var measuredAt = LocalDateTime.of(2026, 6, 15, 10, 30, 0);
+        var receivedAt = LocalDateTime.of(2026, 6, 15, 10, 30, 2);
+        var command = new CreateTelemetryRecordCommand("SENSOR-TH-01", 7L, 25.5, 70.2, measuredAt, receivedAt, 123L);
+        var record = new TelemetryRecord(command);
+
+        when(telemetryCommandService.handle(any(CreateTelemetryRecordCommand.class))).thenReturn(Optional.of(record));
+
+        mockMvc.perform(post("/api/v1/telemetry-records")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "sensorId": "SENSOR-TH-01",
+                                  "coffeeLotId": 7,
+                                  "temperature": 25.5,
+                                  "humidity": 70.2,
+                                  "measuredAt": "2026-06-15T10:30:00",
+                                  "receivedAt": "2026-06-15T10:30:02",
+                                  "sequence": 123
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sensorId").value("SENSOR-TH-01"))
+                .andExpect(jsonPath("$.coffeeLotId").value(7))
+                .andExpect(jsonPath("$.temperature").value(25.5))
+                .andExpect(jsonPath("$.humidity").value(70.2))
+                .andExpect(jsonPath("$.sequence").value(123))
+                .andExpect(jsonPath("$.measuredAt[0]").value(2026))
+                .andExpect(jsonPath("$.receivedAt[0]").value(2026))
+                .andExpect(jsonPath("$.timestamp[0]").value(2026));
     }
 
     @Test

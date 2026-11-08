@@ -11,9 +11,13 @@ public class TelemetryRecordResourceFromEntityAssembler {
     public static TelemetryRecordResource toResourceFromEntity(TelemetryRecord entity) {
         return new TelemetryRecordResource(
                 entity.getId(),
+                entity.getSensorId(),
                 entity.getCoffeeLotId(),
                 entity.getTemperature(),
                 entity.getHumidity(),
+                entity.getMeasuredAt(),
+                entity.getReceivedAt(),
+                entity.getSequence(),
                 entity.getTimestamp());
     }
 }
