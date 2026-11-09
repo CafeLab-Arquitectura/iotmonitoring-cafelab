@@ -3,6 +3,7 @@ package com.cafemetrix.cafelab.shared.infrastructure.persistence.jpa.configurati
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+import org.springframework.stereotype.Component;
 
 import static io.github.encryptorcode.pluralize.Pluralize.pluralize;
 
@@ -27,6 +28,7 @@ import static io.github.encryptorcode.pluralize.Pluralize.pluralize;
  * your domain model contains irregular plurals you may need to adjust the
  * pluralization rules or replace the utility.</p>
  */
+@Component
 public class SnakeCaseWithPluralizedTablePhysicalNamingStrategy implements PhysicalNamingStrategy {
 
     @Override
