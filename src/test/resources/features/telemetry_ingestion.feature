@@ -17,3 +17,4 @@ Característica: Registro y sincronización de telemetría ambiental
     Cuando el sensor reenvía la misma lectura con secuencia 1, temperatura 24.5 °C y humedad 60.0 %
     Entonces el sistema responde con código de estado HTTP 200 o 201
     Y no se duplica el registro en la base de datos
+

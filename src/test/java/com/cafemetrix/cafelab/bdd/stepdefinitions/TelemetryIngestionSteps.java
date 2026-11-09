@@ -100,3 +100,4 @@ public class TelemetryIngestionSteps {
         assertEquals(1, count, "No debe haber más de un registro con la misma combinación (sensorId, sequence)");
     }
 }
+
