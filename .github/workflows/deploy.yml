@@ -1,0 +1,44 @@
+name: CI/CD - Deploy to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: |
+          chmod +x mvnw
+          ./mvnw clean package -DskipTests -B
+
+      - name: Deploy to Oracle Cloud VM
+        env:
+          OCI_HOST: ${{ secrets.OCI_HOST }}
+          OCI_USERNAME: ${{ secrets.OCI_USERNAME }}
+          OCI_SSH_KEY: ${{ secrets.OCI_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s\n" "$OCI_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$OCI_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          
+          # Copiar artefacto renombrado a app.jar
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no target/*.jar "$OCI_USERNAME@$OCI_HOST:/home/opc/cafelab-stack/iotmonitoring/app.jar"
+          
+          # Reconstruir contenedor en la VM
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$OCI_USERNAME@$OCI_HOST" "cd /home/opc/cafelab-stack && sudo docker compose up -d --build iotmonitoring-service"
